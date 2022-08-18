@@ -39,7 +39,7 @@ func Execute() {
 
 func init() {
 	// Add flags in root command if required
-	rootCmd.Flags().StringP("server-url", "u", "http://localhost:5000", "Should come from flag first, then env var SERVER_URL then the config file, then the default last")
+	rootCmd.Flags().StringP("server-url", "u", "http://localhost:5000", "Should come from flag first, then the config file, then the default last")
 
 	// Initialize config variables with viper
 	viper.BindPFlag("server_url", rootCmd.Flags().Lookup("server-url"))

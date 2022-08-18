@@ -7,6 +7,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 const TASK_SERVER = "http://localhost:5000"
@@ -74,4 +79,36 @@ func WriteAPI(task Task) TaskCreateResp {
 	_ = json.Unmarshal(responseData, &taskCreateResp)
 
 	return taskCreateResp
+}
+
+func InitConfig() {
+	viper.AddConfigPath(".")
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
+
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using configuration file: ", viper.ConfigFileUsed())
+	}
+}
+
+func SetCommandValues(cmd *cobra.Command) {
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		// Environment variables can't have dashes in them,
+		// so bind them to their equivalent keys with underscores,
+		// e.g. --server_url to server_url
+		envVarSuffix := ""
+		if strings.Contains(f.Name, "-") {
+			envVarSuffix = strings.ReplaceAll(f.Name, "-", "_")
+			viper.BindEnv(f.Name, envVarSuffix)
+		}
+
+		// Apply the viper config value to the flag
+		// when the flag is not set and viper has a value
+		if !f.Changed && viper.GetString(envVarSuffix) != "" {
+			val := viper.GetString(envVarSuffix)
+			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+		}
+	})
 }

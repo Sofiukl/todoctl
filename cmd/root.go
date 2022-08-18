@@ -21,6 +21,7 @@ var rootCmd = &cobra.Command{
 	Long: `todoctl is a CLI client of task control. you can use our task control portal
 	 also for managing your tasks`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Set command values based on preference
 		utils.SetCommandValues(cmd)
 		serverUrl, _ := cmd.Flags().GetString("server-url")
 		fmt.Println("server url is:", serverUrl)
@@ -39,8 +40,8 @@ func Execute() {
 func init() {
 	// Add flags in root command if required
 	rootCmd.Flags().StringP("server-url", "u", "http://localhost:5000", "Should come from flag first, then env var SERVER_URL then the config file, then the default last")
-	viper.BindPFlag("server_url", rootCmd.Flags().Lookup("server-url"))
 
-	// Initialize env variables with viper
+	// Initialize config variables with viper
+	viper.BindPFlag("server_url", rootCmd.Flags().Lookup("server-url"))
 	cobra.OnInitialize(utils.InitConfig)
 }
